@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+
+spring:
+  datasource:
+    username: root
+    password: ENC(CF0MA9r+tNm5MoNtkUsdZw==)
+    url: jdbc:mysql://127.0.0.1:3306/experiment?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
+#    experiment-path-pattern: /webapp/**
+#  resources:
+#    experiment-locations: /webapp/ #相对路径
+
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.xy.experiment.entity
+
+#showSql
+logging:
+  level:
+    com:
+      example:
+        mapper : info
+
+jasypt:
+  encryptor:
+    password: experiment
+
+
+mail:
+  host: smtp.exmail.qq.com
+  port: 465
+  username: Payne.SeediqBale@foxmail.com
+  password: ae7d703E9C8fb83c
+  form: Payne.SeediqBale@foxmail.com
+  timeout: 25000
+  protocol: smtp
+  auth: true
+
+virtual:
+  serverURI: http://202.205.145.156:8017
+  loginId: 100400
+  secret: fjbr43
+  aeskey: s818nmsYyGFp2hX6aRiKb23eD0TxQdU68jnfMnV/C/k=
+  issueId: 100327
+  save:
+    urlprefix: E:/zxh/file/
+xcloud:
+  uploadPath: E:/zxh/file/
