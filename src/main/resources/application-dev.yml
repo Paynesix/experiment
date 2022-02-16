@@ -6,8 +6,8 @@ server:
 spring:
   datasource:
     username: root
-    password: ENC(CF0MA9r+tNm5MoNtkUsdZw==)
-    url: jdbc:mysql://127.0.0.1:3306/experiment?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    password: 123456qwer
+    url: jdbc:mysql://1.12.235.216:3306/experiment?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
     driver-class-name: com.mysql.jdbc.Driver
   servlet:
     multipart:

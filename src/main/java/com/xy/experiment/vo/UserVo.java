@@ -27,7 +27,15 @@ public class UserVo implements Serializable {
     private String phone;
 
     private String email;
+    private String token;
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     private static final long serialVersionUID = 1L;
 

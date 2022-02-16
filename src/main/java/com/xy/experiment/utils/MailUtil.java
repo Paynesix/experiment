@@ -2,6 +2,7 @@ package com.xy.experiment.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xy.experiment.config.VirtualEntity;
+import com.xy.experiment.constants.ExperimentConstants;
 import com.xy.experiment.exceptions.ExperimentException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,26 +36,26 @@ public class MailUtil {
     private JavaMailSenderImpl createMailSender() {
         try {
             JavaMailSenderImpl sender = new JavaMailSenderImpl();
-//            sender.setHost(ExperimentConstants.HOST);
-//            sender.setPort(ExperimentConstants.PORT);
-//            sender.setUsername(ExperimentConstants.USERNAME);
-//            sender.setPassword(ExperimentConstants.PASSWORD);
-//            sender.setDefaultEncoding("Utf-8");
-//            Properties props = new Properties();
-//            props.setProperty("mail.smtp.timeout", ExperimentConstants.TIME_OUT);
-//            props.setProperty("mail.smtp.auth", ExperimentConstants.AUTH);
-//            props.setProperty("mail.transport.protocol", ExperimentConstants.PROTOCOL);
-//            props.setProperty("mail.smtp.host", ExperimentConstants.HOST);
-            sender.setHost(entity.getHost());
-            sender.setPort(entity.getPort());
-            sender.setUsername(entity.getUsername());
-            sender.setPassword(entity.getPassword());
+            sender.setHost(ExperimentConstants.HOST);
+            sender.setPort(ExperimentConstants.PORT);
+            sender.setUsername(ExperimentConstants.USERNAME);
+            sender.setPassword(ExperimentConstants.PASSWORD);
             sender.setDefaultEncoding("Utf-8");
             Properties props = new Properties();
-            props.setProperty("mail.smtp.timeout", entity.getTimeout());
-            props.setProperty("mail.smtp.auth", entity.getAuth());
-            props.setProperty("mail.transport.protocol", entity.getProtocol());
-            props.setProperty("mail.smtp.host", entity.getHost());
+            props.setProperty("mail.smtp.timeout", ExperimentConstants.TIME_OUT);
+            props.setProperty("mail.smtp.auth", ExperimentConstants.AUTH);
+            props.setProperty("mail.transport.protocol", ExperimentConstants.PROTOCOL);
+            props.setProperty("mail.smtp.host", ExperimentConstants.HOST);
+//            sender.setHost(entity.getHost());
+//            sender.setPort(entity.getPort());
+//            sender.setUsername(entity.getUsername());
+//            sender.setPassword(entity.getPassword());
+//            sender.setDefaultEncoding("Utf-8");
+//            Properties props = new Properties();
+//            props.setProperty("mail.smtp.timeout", entity.getTimeout());
+//            props.setProperty("mail.smtp.auth", entity.getAuth());
+//            props.setProperty("mail.transport.protocol", entity.getProtocol());
+//            props.setProperty("mail.smtp.host", entity.getHost());
             sender.setJavaMailProperties(props);
             logger.info("==========>发送邮箱配置邮箱基本信息！");
             return sender;
@@ -79,7 +80,8 @@ public class MailUtil {
             // 4、根据session对象获取邮件传输对象Transport
             Transport transport = session.getTransport();
             // 设置发件人的账户名和密码
-            transport.connect(entity.getForm(), entity.getPassword());
+            transport.connect(ExperimentConstants.EMAIL_FORM, ExperimentConstants.PASSWORD);
+//            transport.connect(entity.getForm(), entity.getPassword());
             // 发送邮件，并发送到所有收件人地址，message.getAllRecipients() 获取到的是在创建邮件对象时添加的所有收件人,
             // 抄送人, 密送人
             transport.sendMessage(msg, msg.getAllRecipients());
@@ -87,10 +89,10 @@ public class MailUtil {
             // 5、关闭邮件连接
             transport.close();
         } catch (ExperimentException e) {
-            logger.error("=========> 邮件发送异常！");
+            logger.error("=========> 邮件发送异常！" + e);
             throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "邮件发送异常!");
         } catch (Exception e) {
-            logger.error("=========> 邮件发送异常！系统异常!");
+            logger.error("=========> 邮件发送异常！系统异常!" + e);
             throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "邮件发送异常!系统异常!");
         } finally {
             logger.info("=========> 邮件发送结束！");
@@ -113,7 +115,8 @@ public class MailUtil {
             // 1.创建一封邮件的实例对象
             MimeMessage msg = new MimeMessage(session);
             // 2.设置发件人地址
-            msg.setFrom(new InternetAddress(entity.getForm()));
+            msg.setFrom(new InternetAddress(ExperimentConstants.EMAIL_FORM));
+//            msg.setFrom(new InternetAddress(entity.getForm()));
             /**
              * 3.设置收件人地址（可以增加多个收件人、抄送、密送），即下面这一行代码书写多行
              * MimeMessage.RecipientType.TO:发送 MimeMessage.RecipientType.CC：抄送

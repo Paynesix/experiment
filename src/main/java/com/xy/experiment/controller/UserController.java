@@ -55,6 +55,22 @@ public class UserController extends BaseController {
                 throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE,
                         "必须包含大小写字母和数字的组合，可以使用特殊字符，长度在8-10之间！");
             }
+            if (StringUtil.isEmpty(userVo.getToken())) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "动态验证码不能为空！");
+            }
+            // 0. 验证码是否有效
+            EmailCacheVo emailCacheVo = (EmailCacheVo) ExEnum.getInstance().getEmailCache().get(userVo.getEmail());
+            if(emailCacheVo == null){
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "动态验证码验证失败，请重新发送！");
+            } else {
+                LocalDateTime nowDate = LocalDateTime.now();
+                LocalDateTime sendDate = emailCacheVo.getSendEmailDate();
+                if (sendDate.plusMinutes(10).isBefore(nowDate)){
+                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户动态验证码失效！");
+                } else if(!emailCacheVo.getToken().equals(userVo.getToken())){
+                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户动态验证码不正确！");
+                }
+            }
             // 1.查询是否已经存在用户
             ExperimentUser exUser = userMapper.getOneByAccOrEmail(userVo.getAccount().toLowerCase(),
                     userVo.getEmail().toLowerCase());
@@ -229,6 +245,58 @@ public class UserController extends BaseController {
         }
     }
 
+    @RequestMapping(value = "/sendverify", method = RequestMethod.POST)
+    void sendVerify(@RequestBody String reqJsonStr, HttpServletRequest request, HttpServletResponse response) {
+        logger.info("用户发送注册邮箱动态验证码参数：邮箱：{}", reqJsonStr);
+        try {
+            reqJsonStr = URLDecoder.decode(reqJsonStr, "utf-8");
+            JSONObject req = JSONObject.parseObject(reqJsonStr);
+            String email = req.getString("email");
+            if (!ValidationUtils.validaEmail(email)) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "邮箱格式错误！");
+            }
+            String token = RandomStringGenerator.getRandomStringByLength(4);
+            EmailCacheVo emailCacheVo = (EmailCacheVo) ExEnum.getInstance().getEmailCache().get(email);
+            if (emailCacheVo != null) {
+                LocalDateTime nowDate = LocalDateTime.now();
+                LocalDateTime sendDate = emailCacheVo.getSendEmailDate();
+                if (sendDate.plusMinutes(10).isAfter(nowDate)){
+                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE,
+                            "用户动态验证码连接已经发送, 并在有效期内！");
+                }
+            }
+            // 数据库查询，是否已经存在用户邮箱
+            ExperimentUser user = userMapper.getOneByEmail(email.toLowerCase());
+            if(user != null){
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户已注册，请登录!");
+            }
+            // 1.发送邮箱
+            MailUtil mailUtil = new MailUtil();
+            Map<String, String> params = new HashMap();
+            params.put("url", token);
+            mailUtil.sendMail(email, params);
+
+            // 2.保存邮箱发送，防止重复发送重置邮箱
+            EmailCacheVo cacheVo = new EmailCacheVo();
+            cacheVo.setEmail(email);
+            cacheVo.setSendEmailDate(LocalDateTime.now());
+            cacheVo.setToken(token);
+            ExEnum.getInstance().getEmailCache().put(email, cacheVo);
+
+            // 3.跳转到发送成功界面
+            JSONObject result = new JSONObject();
+            result.put("result", "SUCCESS");
+            sendSuccessData(response, result);
+        } catch (ExperimentException e) {
+            logger.error("发送邮箱失败: code:{}, msg:{}", e.getCode(), e);
+            sendFailureMessage(response, e.getCode(), e.getMsg());
+        } catch (Exception e) {
+            logger.error("发送邮箱失败!", e);
+            sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "发送邮箱失败，系统错误！");
+        } finally {
+            logger.info("发送邮箱结束!");
+        }
+    }
 
     @RequestMapping(value = "/sendupdateemail", method = RequestMethod.POST)
     void sendUpdateEmail(@RequestBody String reqJsonStr, HttpServletRequest request, HttpServletResponse response) {
