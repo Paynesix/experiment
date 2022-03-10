@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.StringUtil;
 import com.xy.experiment.cache.ExEnum;
 import com.xy.experiment.config.VirtualEntity;
+import com.xy.experiment.constants.ExperimentConstants;
 import com.xy.experiment.entity.ExperimentUser;
 import com.xy.experiment.exceptions.ExperimentException;
 import com.xy.experiment.mapper.ExperimentUserMapper;
@@ -101,6 +102,69 @@ public class UserController extends BaseController {
         }
     }
 
+    @RequestMapping(value = "/registeradmin", method = RequestMethod.POST)
+    void registerAdmin(@RequestBody UserVo userVo, HttpServletRequest request, HttpServletResponse response) {
+        logger.info("新增管理员用户数据：{}", JSONObject.toJSONString(userVo));
+        try {
+            if (StringUtil.isEmpty(userVo.getAccount())) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "登录名称不能为空！");
+            }
+            if (!ValidationUtils.validaEmail(userVo.getEmail())) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "邮箱格式错误！");
+            }
+            if (!ValidationUtils.validaPassword(userVo.getPassword())) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE,
+                        "必须包含大小写字母和数字的组合，可以使用特殊字符，长度在8-10之间！");
+            }
+            if (StringUtil.isEmpty(userVo.getToken())) {
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "动态验证码不能为空！");
+            }
+            // 0. 验证码是否有效
+            EmailCacheVo emailCacheVo = (EmailCacheVo) ExEnum.getInstance().getEmailCache().get(userVo.getEmail());
+            if(emailCacheVo == null){
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "动态验证码验证失败，请重新发送！");
+            } else {
+                LocalDateTime nowDate = LocalDateTime.now();
+                LocalDateTime sendDate = emailCacheVo.getSendEmailDate();
+                if (sendDate.plusMinutes(10).isBefore(nowDate)){
+                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户动态验证码失效！");
+                } else if(!emailCacheVo.getToken().equals(userVo.getToken())){
+                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户动态验证码不正确！");
+                }
+            }
+            // 1.0 邮箱是否容许注册，只有规定邮箱才可以注册
+
+            // 1.查询是否已经存在用户
+            ExperimentUser exUser = userMapper.getOneByAccOrEmail(userVo.getAccount().toLowerCase(),
+                    userVo.getEmail().toLowerCase());
+            if (null != exUser) {
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户已经存在，请前往登陆");
+            }
+            // 2.新增用户
+            ExperimentUser insertUser = new ExperimentUser();
+            BeanUtils.copyProperties(userVo, insertUser);
+            insertUser.setAccount(insertUser.getAccount().toLowerCase());
+            insertUser.setEmail(insertUser.getEmail().toLowerCase());
+            insertUser.setUserTag(ExperimentConstants.USER_TAG_ADMIN);
+            int resNum = userMapper.insert(insertUser);
+            if (resNum != 1) {
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户新增失败！");
+            }
+            // 3.跳转到登陆界面
+            JSONObject result = new JSONObject();
+            result.put("result", insertUser.getAccount());
+            sendSuccessData(response, result);
+        } catch (ExperimentException e) {
+            logger.error("新增用户失败: code:{}, msg:{}", e.getCode(), e);
+            sendFailureMessage(response, e.getCode(), e.getMsg());
+        } catch (Exception e) {
+            logger.error("新增用户失败!", e);
+            sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "新增用户失败，系统错误！");
+        } finally {
+            logger.info("新增用户结束!");
+        }
+    }
+
     @RequestMapping(value = "/loginuser", method = RequestMethod.POST)
     void loginUser(@RequestBody UserVo userVo, HttpServletRequest request, HttpServletResponse response) {
         logger.info("用户登陆数据：{}", JSONObject.toJSONString(userVo));
@@ -146,7 +210,7 @@ public class UserController extends BaseController {
                         it.remove();
                     }
                 }
-                logger.info("==================>清楚后的session集合大小:{}", exEnum.getUserCache().size());
+                logger.info("==================>清除后的session集合大小:{}", exEnum.getUserCache().size());
             }
             exEnum.getUserCache().put(cacheVo.getSessionId(), cacheVo);
 

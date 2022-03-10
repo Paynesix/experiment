@@ -39,7 +39,7 @@ public class ExperimentUser implements Serializable {
 
     /** 五分钟内密码输入错误次数 如果错误达到五次则锁定用户24小时 */
     private Integer passwordErrorNum;
-    /** 用户标志 0-店铺用户 1-一级商户 */
+    /** 用户标志 0-学生 1-管理员 */
     private Integer userTag;
 
     private String email;

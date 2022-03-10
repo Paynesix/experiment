@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Slf4j
 @Configuration
-class WebConfigurer extends WebMvcConfigurerAdapter {
+public class WebConfigurer extends WebMvcConfigurerAdapter {
     @Autowired
     UploadConfig uploadConfig;
 

@@ -11,4 +11,7 @@ public class ExperimentConstants {
     public final static String PROTOCOL = "smtp";
     public final static String AUTH = "true";
 
+    public final static int USER_TAG_STU = 0;//用户表，stu
+    public final static int USER_TAG_ADMIN = 1;//用户表，admin
+
 }

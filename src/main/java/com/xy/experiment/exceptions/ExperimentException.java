@@ -22,4 +22,7 @@ public class ExperimentException extends BizException {
     public ExperimentException(int code, String msg) {
         super(code, msg);
     }
+    public ExperimentException(String msg) {
+        super(msg);
+    }
 }
