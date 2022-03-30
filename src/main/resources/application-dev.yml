@@ -23,6 +23,8 @@ spring:
 mybatis:
   mapper-locations: classpath:mapping/*Mapper.xml
   type-aliases-package: com.xy.experiment.entity
+  configuration:
+    map-underscore-to-camel-case: true
 
 #showSql
 logging:
@@ -56,5 +58,8 @@ virtual:
 xcloud:
   uploadPath: /root/www/logs/
 
-
-
+experiment:
+  isOpenEmail: false
+  vrExeDownPath: /exp/download/VRSinusOpening.exe
+  vrExeName: VRSinusOpening.exe
+#  vrExeDownPath: D:\\download\\wechat\\WeChat Files\\wxid_shwbkux0ilg222\\FileStorage\\File\\2022-03\\VR鼻窦开放术.exe

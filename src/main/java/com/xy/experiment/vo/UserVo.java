@@ -26,7 +26,7 @@ public class UserVo implements Serializable {
     /** 手机号 */
     private String phone;
 
-    private String email;
+    private String email="";
     private String token;
 
     public String getToken() {

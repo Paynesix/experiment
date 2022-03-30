@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,6 +49,10 @@ public class ExamController extends BaseController {
     private ExperimentExamMapper examMapper;
     @Autowired
     private ExperimentUserMapper userMapper;
+    @Value("${experiment.vrExeDownPath}")
+    private String vrExeDownPath;
+    @Value("${experiment.vrExeName}")
+    private String vrExeName;
 
     /**
      * 新增成绩
@@ -68,6 +73,7 @@ public class ExamController extends BaseController {
             Map<Integer, ExamVo> map = new HashMap<>();
             int min = 1000;
             int max = -1;
+            int highScore = 0;
             JSONArray array = JSONArray.parseArray(reqJsonStr);
             ExperimentExam examVo = new ExperimentExam();
             for (int i=0 ; i<array.size(); i++){
@@ -87,16 +93,21 @@ public class ExamController extends BaseController {
                 examVo.setDuration(examVo.getDuration() + actionDetail.getDuration());
                 examVo.setHintNum(examVo.getHintNum() + actionDetail.getHintNum());
                 examVo.setMistakeNum(examVo.getMistakeNum() + actionDetail.getMistakeNum());
+                highScore = Math.max(vo.getScore(), highScore);
             }
             // 3. 求总分，最后保存
             examVo.setAccount(map.get(max).getaCId());
             examVo.setType(map.get(max).getType());
-            examVo.setScore(map.get(max).getScore());
+            examVo.setScore(highScore);
             examVo.setStartDate(map.get(min).getActionDetails().get(0).getStartDate());
             examVo.setStopDate(map.get(max).getActionDetails().get(0).getStopDate());
 
             if (StringUtil.isEmpty(examVo.getAccount())) {
                 throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "考号不能为空!");
+            }
+            ExperimentUser exUser = userMapper.getOne(examVo.getAccount());
+            if (null == exUser) {
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户不存在，请先注册用户！");
             }
             if (examVo.getScore() < 0 || examVo.getScore() > 100) {
                 throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "实验成绩不能小于0分，并且不能大于100分!");
@@ -164,6 +175,7 @@ public class ExamController extends BaseController {
             Map<Integer, ExamVo> map = new HashMap<>();
             int min = 1000;
             int max = -1;
+            int highScore = 0;
             ExperimentExam examVo = new ExperimentExam();
             ExamVo vo = JSONObject.parseObject(reqJsonStr, ExamVo.class);
             List<ExamVo.ActionDetail> actionDetails = vo.getActionDetails();
@@ -182,16 +194,21 @@ public class ExamController extends BaseController {
                 examVo.setDuration(examVo.getDuration() + tmp.getDuration());
                 examVo.setHintNum(examVo.getHintNum() + tmp.getHintNum());
                 examVo.setMistakeNum(examVo.getMistakeNum() + tmp.getMistakeNum());
+                highScore = Math.max(vo.getScore(), highScore);
             }
             // 3. 求总分，最后保存
             examVo.setAccount(map.get(max).getaCId());
             examVo.setType(map.get(max).getType());
-            examVo.setScore(map.get(max).getScore());
+            examVo.setScore(highScore);
             examVo.setStartDate(map.get(min).getActionDetails().get(0).getStartDate());
             examVo.setStopDate(map.get(max).getActionDetails().get(0).getStopDate());
 
             if (StringUtil.isEmpty(examVo.getAccount())) {
                 throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "考号不能为空!");
+            }
+            ExperimentUser exUser = userMapper.getOne(examVo.getAccount());
+            if (null == exUser) {
+                throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "用户不存在，请先注册用户！");
             }
             if (examVo.getScore() < 0 || examVo.getScore() > 100) {
                 throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "实验成绩不能小于0分，并且不能大于100分!");
@@ -265,11 +282,11 @@ public class ExamController extends BaseController {
                 pageSize = 10;
             }
             List<ExperimentExam> list;
-            Page<Object> objects = PageHelper.startPage(pageNum, pageSize);
             ExperimentUser user = userMapper.getOneByAccOrEmail(account, null);
             if (null == user) {
                 throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "实验考生不存在，请核实后再查询!");
             }
+            Page<Object> objects = PageHelper.startPage(pageNum, pageSize);
             if (user.getUserTag() == ExperimentConstants.USER_TAG_ADMIN) {
                 list = examMapper.getAll();
             } else {
@@ -317,7 +334,7 @@ public class ExamController extends BaseController {
             }
             // 每天只容许下载一次
             int count = 0;
-            DownloadCacheVo downloadCacheVo = (DownloadCacheVo) exEnum.getDownloadCache().get(id);
+            DownloadCacheVo downloadCacheVo = (DownloadCacheVo) exEnum.getDownloadCache().get(cacheVo.getAccount());
             if (downloadCacheVo != null) {
                 count += downloadCacheVo.getDownCount();
                 LocalDateTime nowDate = LocalDateTime.now();
@@ -347,43 +364,39 @@ public class ExamController extends BaseController {
     }
 
     public String downloadFile(HttpServletRequest request, HttpServletResponse response) {
-        String fileName = "VR鼻窦开放术.exe";// 文件名
-        if (fileName != null) {
-            //设置文件路径
-            File file = new File("/exp/download/VR鼻窦开放术.exe");
-            //File file = new File(realPath , fileName);
-            if (file.exists()) {
-                response.setContentType("application/force-download");// 设置强制下载不打开
-                response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-                byte[] buffer = new byte[1024];
-                FileInputStream fis = null;
-                BufferedInputStream bis = null;
-                try {
-                    fis = new FileInputStream(file);
-                    bis = new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        os.write(buffer, 0, i);
-                        i = bis.read(buffer);
+        //设置文件路径
+        File file = new File(vrExeDownPath);
+        if (file.exists()) {
+            response.setContentType("application/force-download");// 设置强制下载不打开
+            response.addHeader("Content-Disposition", "attachment;fileName=" + vrExeName);// 设置文件名
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = null;
+            BufferedInputStream bis = null;
+            try {
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+                return "下载成功";
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally { // 做关闭操作
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    return "下载成功";
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally { // 做关闭操作
-                    if (bis != null) {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (fis != null) {
-                        try {
-                            fis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
