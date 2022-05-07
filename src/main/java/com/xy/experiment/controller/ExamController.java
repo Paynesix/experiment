@@ -49,10 +49,12 @@ public class ExamController extends BaseController {
     private ExperimentExamMapper examMapper;
     @Autowired
     private ExperimentUserMapper userMapper;
-    @Value("${experiment.vrExeDownPath}")
-    private String vrExeDownPath;
+    @Value("${experiment.exeDownPath}")
+    private String exeDownPath;
     @Value("${experiment.vrExeName}")
     private String vrExeName;
+    @Value("${experiment.peExeName}")
+    private String peExeName;
 
     /**
      * 新增成绩
@@ -274,6 +276,12 @@ public class ExamController extends BaseController {
             Integer pageNum = req.getInteger("pageNum");
             Integer pageSize = req.getInteger("pageSize");
             String type = req.getString("type");// 预留，后续分实验类型进行开发
+            if(StringUtil.isEmpty(account)){
+                throw new ExperimentException(ExperimentException.PARAMS_ERROR_CODE, "参数不能为空");
+            }
+            if(StringUtil.isEmpty(type)){
+                type = "考试";
+            }
 
             if (pageNum <= 0 || pageNum > 10000000) {
                 pageNum = 1;
@@ -288,9 +296,9 @@ public class ExamController extends BaseController {
             }
             Page<Object> objects = PageHelper.startPage(pageNum, pageSize);
             if (user.getUserTag() == ExperimentConstants.USER_TAG_ADMIN) {
-                list = examMapper.getAll();
+                list = examMapper.getAllByType(type);
             } else {
-                list = examMapper.getOne(account);
+                list = examMapper.getOneByAccountAndType(account, type);
             }
             JSONObject result = new JSONObject();
             result.put("list", list);
@@ -310,7 +318,7 @@ public class ExamController extends BaseController {
     }
 
     /**
-     * 查询考生分数
+     * 下载程序 VR鼻窦
      *
      * @param sign
      * @param request
@@ -318,7 +326,24 @@ public class ExamController extends BaseController {
      */
     @GetMapping(value = "/downloadexe")
     void downloadExe(String sign, HttpServletRequest request, HttpServletResponse response) {
-        logger.info("下载程序");
+        logger.info("下载VR鼻窦程序");
+        down(sign, vrExeName, request, response);
+    }
+
+    /**
+     * 下载青霉素实验程序
+     *
+     * @param sign
+     * @param request
+     * @param response
+     */
+    @GetMapping(value = "/downloadpenicillin")
+    void downloadpenicillin(String sign, HttpServletRequest request, HttpServletResponse response) {
+        logger.info("下载青霉素实验程序");
+        down(sign, peExeName, request, response);
+    }
+
+    private void down(String sign, String experimentName, HttpServletRequest request, HttpServletResponse response){
         try {
             // 判断是否登录
             ExEnum exEnum = ExEnum.getInstance();
@@ -344,7 +369,7 @@ public class ExamController extends BaseController {
                             "每天只容许下载一次!");
                 }
             }
-            downloadFile(request, response);
+            downloadFile(experimentName, request, response);
             // 保存下载记录
             DownloadCacheVo downloadCache = new DownloadCacheVo();
             downloadCache.setAccount(cacheVo.getAccount());
@@ -363,19 +388,20 @@ public class ExamController extends BaseController {
         }
     }
 
-    public String downloadFile(HttpServletRequest request, HttpServletResponse response) {
+    public String downloadFile(String experimentName, HttpServletRequest request, HttpServletResponse response) {
         //设置文件路径
-        File file = new File(vrExeDownPath);
+        File file = new File(exeDownPath + experimentName);
         if (file.exists()) {
             response.setContentType("application/force-download");// 设置强制下载不打开
-            response.addHeader("Content-Disposition", "attachment;fileName=" + vrExeName);// 设置文件名
+            response.addHeader("Content-Disposition", "attachment;fileName=" + experimentName);// 设置文件名
             byte[] buffer = new byte[1024];
             FileInputStream fis = null;
             BufferedInputStream bis = null;
+            OutputStream os = null;
             try {
                 fis = new FileInputStream(file);
                 bis = new BufferedInputStream(fis);
-                OutputStream os = response.getOutputStream();
+                os = response.getOutputStream();
                 int i = bis.read(buffer);
                 while (i != -1) {
                     os.write(buffer, 0, i);
@@ -395,6 +421,13 @@ public class ExamController extends BaseController {
                 if (fis != null) {
                     try {
                         fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (os != null) {
+                    try {
+                        os.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

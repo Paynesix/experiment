@@ -60,6 +60,7 @@ xcloud:
 
 experiment:
   isOpenEmail: false
-  vrExeDownPath: /exp/download/VRSinusOpening.exe
+  exeDownPath: /exp/download/
   vrExeName: VRSinusOpening.exe
-#  vrExeDownPath: D:\\download\\wechat\\WeChat Files\\wxid_shwbkux0ilg222\\FileStorage\\File\\2022-03\\VR鼻窦开放术.exe
+  peExeName: penicillin.rar
+#  exeDownPath: D:\\exp\\
