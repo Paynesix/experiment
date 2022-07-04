@@ -227,7 +227,7 @@ public class ExamController extends BaseController {
 
             examVo.setMemo(JSON.toJSONString(vo));
             // 4. 保存最高分
-            ExperimentExam one = examMapper.getOneScore(examVo.getAccount());
+            ExperimentExam one = examMapper.getOneScoreByAccAndType(examVo.getAccount(), examVo.getType());
             int resNum;
             if(Objects.nonNull(one)){
                 if(one.getScore() < examVo.getScore()){
@@ -359,7 +359,8 @@ public class ExamController extends BaseController {
             }
             // 每天只容许下载一次
             int count = 0;
-            DownloadCacheVo downloadCacheVo = (DownloadCacheVo) exEnum.getDownloadCache().get(cacheVo.getAccount());
+            String downExpKey = cacheVo.getAccount()+experimentName;
+            DownloadCacheVo downloadCacheVo = (DownloadCacheVo) exEnum.getDownloadCache().get(downExpKey);
             if (downloadCacheVo != null) {
                 count += downloadCacheVo.getDownCount();
                 LocalDateTime nowDate = LocalDateTime.now();
@@ -372,11 +373,11 @@ public class ExamController extends BaseController {
             downloadFile(experimentName, request, response);
             // 保存下载记录
             DownloadCacheVo downloadCache = new DownloadCacheVo();
-            downloadCache.setAccount(cacheVo.getAccount());
+            downloadCache.setAccount(downExpKey);
             downloadCache.setDownloadDate(LocalDateTime.now());
             downloadCache.setDownCount(count + 1);
-            ExEnum.getInstance().getDownloadCache().put(cacheVo.getAccount(), downloadCache);
-            logger.info("用户：{}，下载程序次数：{}", cacheVo.getAccount(), count + 1);
+            ExEnum.getInstance().getDownloadCache().put(downExpKey, downloadCache);
+            logger.info("用户：{}，下载程序次数：{}", downExpKey, count + 1);
             logger.info("下载程序总次数：{}", ExEnum.getInstance().getDownloadCache().size());
 
         } catch (ExperimentException e) {
@@ -394,7 +395,7 @@ public class ExamController extends BaseController {
         if (file.exists()) {
             response.setContentType("application/force-download");// 设置强制下载不打开
             response.addHeader("Content-Disposition", "attachment;fileName=" + experimentName);// 设置文件名
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
             FileInputStream fis = null;
             BufferedInputStream bis = null;
             OutputStream os = null;

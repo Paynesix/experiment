@@ -60,6 +60,20 @@ public interface ExperimentExamMapper {
     })
     ExperimentExam getOneScore(String account);
 
+    @Select("SELECT * FROM experiment_exam WHERE account = #{account} and type = #{type}")
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "account", column = "account"),
+            @Result(property = "type", column = "type"),
+            @Result(property = "startDate", column = "start_date"),
+            @Result(property = "stopDate", column = "stop_date"),
+            @Result(property = "duration", column = "duration"),
+            @Result(property = "hintNum", column = "hint_num"),
+            @Result(property = "mistakeNum", column = "mistake_num"),
+            @Result(property = "score", column = "score")
+    })
+    ExperimentExam getOneScoreByAccAndType(String account, String type);
+
     @Select("SELECT * FROM experiment_exam WHERE account = #{account}")
     @Results({
             @Result(property = "id", column = "id"),
@@ -92,8 +106,9 @@ public interface ExperimentExamMapper {
             "values (#{account},#{type},#{startDate},#{stopDate},#{duration},#{hintNum},#{mistakeNum},#{score},#{memo})")
     int insert(ExperimentExam score);
 
-    @Update("UPDATE experiment_exam SET score=#{score} , memo=#{memo}" +
-            "WHERE account =#{account}")
+    @Update("UPDATE experiment_exam SET score=#{score}, memo=#{memo}, start_date=#{startDate}," +
+            " stop_date=#{stopDate}, duration=#{duration}, hint_num=#{hintNum}, mistake_num=#{mistakeNum} " +
+            "WHERE account =#{account} and type =#{type}")
     int update(ExperimentExam score);
 
     @Delete("DELETE FROM experiment_exam WHERE id =#{id}")
