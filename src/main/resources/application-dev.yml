@@ -5,9 +5,9 @@ server:
 
 spring:
   datasource:
-    username: root
-    password: 123456qwer
-    url: jdbc:mysql://1.12.235.216:3306/experiment?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    username: dev
+    password: 321456qwer
+    url: jdbc:mysql://11.122.235.216:3306/experiment?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
     driver-class-name: com.mysql.jdbc.Driver
   servlet:
     multipart:
@@ -41,17 +41,17 @@ mail:
   host: smtp.exmail.qq.com
   port: 465
   username: Payne.SeediqBale@foxmail.com
-  password: ae7d703E9C8fb83c
+  password: ae7d703E9C8fb833
   form: Payne.SeediqBale@foxmail.com
   timeout: 25000
   protocol: smtp
   auth: true
 
 virtual:
-  serverURI: http://202.205.145.156:8017
-  loginId: 100400
-  secret: fjbr43
-  aeskey: s818nmsYyGFp2hX6aRiKb23eD0TxQdU68jnfMnV/C/k=
+  serverURI: http://202.205.145.256:8011
+  loginId: 100401
+  secret: sjbr43
+  aeskey: 2818nmsYyGFp2hX6aRiKb23eD0TxQdU68jnfMnV/C/k=
   issueId: 100327
   save:
     urlprefix: /root/www/logs/
