@@ -105,7 +105,7 @@ public class UserController extends BaseController {
             logger.error("新增用户失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("新增用户失败!", e);
+            logger.error("新增用户失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "新增用户失败，系统错误！");
         } finally {
             logger.info("新增用户结束!");
@@ -176,7 +176,7 @@ public class UserController extends BaseController {
             logger.error("新增用户失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("新增用户失败!", e);
+            logger.error("新增用户失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "新增用户失败，系统错误！");
         } finally {
             logger.info("新增用户结束!");
@@ -244,7 +244,7 @@ public class UserController extends BaseController {
             logger.error("用户登陆失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("用户登陆失败!", e);
+            logger.error("用户登陆失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "用户登陆失败，系统错误！");
         } finally {
             logger.info("用户登陆结束!");
@@ -315,7 +315,7 @@ public class UserController extends BaseController {
             logger.error("管理员登陆失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("管理员登陆失败!", e);
+            logger.error("管理员登陆失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "管理员登陆失败，系统错误！");
         } finally {
             logger.info("管理员登陆结束!");
@@ -341,7 +341,7 @@ public class UserController extends BaseController {
             logger.error("验证用户是否登陆失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("验证用户是否登陆失败!", e);
+            logger.error("验证用户是否登陆失败!:{}", e);
             sendFailureMessage(response, ExperimentException.NOT_LOGIN_CODE,
                     "验证用户是否登陆失败，系统错误！");
         } finally {
@@ -399,7 +399,7 @@ public class UserController extends BaseController {
             logger.error("发送邮箱失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("发送邮箱失败!", e);
+            logger.error("发送邮箱失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "发送邮箱失败，系统错误！");
         } finally {
             logger.info("发送邮箱结束!");
@@ -456,7 +456,7 @@ public class UserController extends BaseController {
             logger.error("发送邮箱失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("发送邮箱失败!", e);
+            logger.error("发送邮箱失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "发送邮箱失败，系统错误！");
         } finally {
             logger.info("发送邮箱结束!");
@@ -512,7 +512,7 @@ public class UserController extends BaseController {
             logger.error("发送邮箱失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("发送邮箱失败!", e);
+            logger.error("发送邮箱失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "发送邮箱失败，系统错误！");
         } finally {
             logger.info("发送邮箱结束!");
@@ -555,7 +555,7 @@ public class UserController extends BaseController {
             logger.error("发送邮箱失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("发送邮箱失败!", e);
+            logger.error("发送邮箱失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "发送邮箱失败，系统错误！");
         } finally {
             logger.info("发送邮箱结束!");
@@ -619,7 +619,7 @@ public class UserController extends BaseController {
             logger.error("用户更新密码失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("用户更新密码失败!", e);
+            logger.error("用户更新密码失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "用户更新密码失败，系统错误！");
         } finally {
             logger.info("用户更新密码结束!");

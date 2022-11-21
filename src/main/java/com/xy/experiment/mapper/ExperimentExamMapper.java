@@ -86,7 +86,7 @@ public interface ExperimentExamMapper {
             @Result(property = "mistakeNum", column = "mistake_num"),
             @Result(property = "score", column = "score")
     })
-    List<ExperimentExam> getOne(String account);
+    List<ExperimentExam> getList(String account);
 
     @Select("SELECT * FROM experiment_exam WHERE account = #{account} and type = #{type}")
     @Results({
@@ -112,6 +112,9 @@ public interface ExperimentExamMapper {
     int update(ExperimentExam score);
 
     @Delete("DELETE FROM experiment_exam WHERE id =#{id}")
-    void delete(Integer id);
+    void delete(Long id);
+
+    @Select("select count(distinct account) from experiment_exam")
+    long queryUserCount();
 
 }

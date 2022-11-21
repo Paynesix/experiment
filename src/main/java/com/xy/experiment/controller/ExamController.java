@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +58,7 @@ public class ExamController extends BaseController {
     private String peExeName;
 
     /**
-     * 新增成绩
+     * 新增成绩 []
      *
      * @param reqJsonStr
      * @param request
@@ -125,25 +126,7 @@ public class ExamController extends BaseController {
             }
 
             examVo.setMemo(array.toJSONString());
-            // 4. 保存最高分
-            ExperimentExam one = examMapper.getOneScore(examVo.getAccount());
-            int resNum;
-            if(Objects.nonNull(one)){
-                if(one.getScore() < examVo.getScore()){
-                    resNum = examMapper.update(examVo);
-                    if (resNum != 1) {
-                        throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "更新考生实验记录失败!");
-                    }
-                } else {
-                    logger.info("不是最高分，不用更新");
-                }
-            } else {
-                resNum = examMapper.insert(examVo);
-                logger.info("第一次考试成绩保存");
-                if (resNum != 1) {
-                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "新增考生实验记录失败!");
-                }
-            }
+            insertExam(examVo);
             JSONObject result = new JSONObject();
             result.put("result", "SUCCESS");
             sendSuccessData(response, result);
@@ -151,15 +134,54 @@ public class ExamController extends BaseController {
             logger.error("新增考生实验记录失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("新增考生实验记录失败!", e);
+            logger.error("新增考生实验记录失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "新增考生实验记录失败，系统错误!");
         } finally {
             logger.info("新增考生实验记录结束!");
         }
     }
 
+    private void insertExam(ExperimentExam examVo) {
+        // 4. 保存最高分
+//            ExperimentExam one = examMapper.getOneScore(examVo.getAccount());
+//            int resNum;
+//            if(Objects.nonNull(one)){
+//                if(one.getScore() < examVo.getScore()){
+//                    resNum = examMapper.update(examVo);
+//                    if (resNum != 1) {
+//                        throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "更新考生实验记录失败!");
+//                    }
+//                } else {
+//                    logger.info("不是最高分，不用更新");
+//                }
+//            } else {
+//                resNum = examMapper.insert(examVo);
+//                logger.info("第一次考试成绩保存");
+//                if (resNum != 1) {
+//                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "新增考生实验记录失败!");
+//                }
+//            }
+
+        // 4. 保存最新5次记录
+        List<ExperimentExam> list = examMapper.getList(examVo.getAccount());
+        if(!CollectionUtils.isEmpty(list) && list.size() >= 5){
+            // 如果多余等于5条记录，删除最旧那条
+            long minId = Long.MAX_VALUE;
+            for(ExperimentExam tmp : list){
+                minId = Math.min(tmp.getId(), minId);
+            }
+            logger.info("多余等于5条记录，删除最旧那条");
+            examMapper.delete(minId);
+        }
+        int resNum = examMapper.insert(examVo);
+        logger.info("考试成绩保存");
+        if (resNum != 1) {
+            throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "新增考生实验记录失败!");
+        }
+    }
+
     /**
-     * 新增成绩
+     * 新增成绩 {}
      *
      * @param reqJsonStr
      * @param request
@@ -226,25 +248,7 @@ public class ExamController extends BaseController {
             }
 
             examVo.setMemo(JSON.toJSONString(vo));
-            // 4. 保存最高分
-            ExperimentExam one = examMapper.getOneScoreByAccAndType(examVo.getAccount(), examVo.getType());
-            int resNum;
-            if(Objects.nonNull(one)){
-                if(one.getScore() < examVo.getScore()){
-                    resNum = examMapper.update(examVo);
-                    if (resNum != 1) {
-                        throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "更新考生实验记录失败!");
-                    }
-                } else {
-                    logger.info("不是最高分，不用更新");
-                }
-            } else {
-                resNum = examMapper.insert(examVo);
-                logger.info("第一次考试成绩保存");
-                if (resNum != 1) {
-                    throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE, "新增考生实验记录失败!");
-                }
-            }
+            insertExam(examVo);
             JSONObject result = new JSONObject();
             result.put("result", "SUCCESS");
             sendSuccessData(response, result);
@@ -252,7 +256,7 @@ public class ExamController extends BaseController {
             logger.error("新增考生实验记录失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("新增考生实验记录失败!", e);
+            logger.error("新增考生实验记录失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "新增考生实验记录失败，系统错误!");
         } finally {
             logger.info("新增考生实验记录结束!");
@@ -310,7 +314,7 @@ public class ExamController extends BaseController {
             logger.error("查询考生实验记录失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("查询考生实验记录失败!", e);
+            logger.error("查询考生实验记录失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "查询考生实验记录失败，系统错误!");
         } finally {
             logger.info("查询考生实验记录结束!");
@@ -365,9 +369,9 @@ public class ExamController extends BaseController {
                 count += downloadCacheVo.getDownCount();
                 LocalDateTime nowDate = LocalDateTime.now();
                 LocalDateTime sendDate = downloadCacheVo.getDownloadDate();
-                if (sendDate.plusDays(1L).isAfter(nowDate)){
+                if (sendDate.plusDays(1L).isAfter(nowDate) && count > 10){
                     throw new ExperimentException(ExperimentException.BIZ_ERROR_CODE,
-                            "每天只容许下载一次!");
+                            "每天只容许下载十次!");
                 }
             }
             downloadFile(experimentName, request, response);
@@ -384,7 +388,7 @@ public class ExamController extends BaseController {
             logger.error("下载失败: code:{}, msg:{}", e.getCode(), e);
             sendFailureMessage(response, e.getCode(), e.getMsg());
         } catch (Exception e) {
-            logger.error("下载失败!", e);
+            logger.error("下载失败!:{}", e);
             sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "下载失败，系统错误!");
         }
     }
@@ -438,6 +442,25 @@ public class ExamController extends BaseController {
         return "下载失败";
     }
 
+    @RequestMapping(value = "/queryusercount", method = RequestMethod.POST)
+    void queryUserCount(HttpServletRequest request, HttpServletResponse response) {
+        logger.info("查询用户总人数");
+        try {
+            long count = examMapper.queryUserCount();
+            JSONObject result = new JSONObject();
+            result.put("result", "SUCCESS");
+            result.put("data", count);
+            sendSuccessData(response, result);
+        } catch (ExperimentException e) {
+            logger.error("查询用户总人数失败: code:{}, msg:{}", e.getCode(), e);
+            sendFailureMessage(response, e.getCode(), e.getMsg());
+        } catch (Exception e) {
+            logger.error("查询用户总人数失败!:{}", e);
+            sendFailureMessage(response, ExperimentException.SYSTEM_ERROR_CODE, "查询用户总人数失败，系统错误！");
+        } finally {
+            logger.info("查询用户总人数结束!");
+        }
+    }
 
 
 }
