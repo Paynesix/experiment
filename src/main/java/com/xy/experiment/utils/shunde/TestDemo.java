@@ -1,4 +1,4 @@
-package com.xy.experiment.utils;
+package com.xy.experiment.utils.shunde;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xy.experiment.exceptions.ExperimentException;
@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class HttpUtils {
+public class TestDemo {
 
 
     public static String serverURI = "http://202.205.145.156:8017";
@@ -32,7 +34,7 @@ public class HttpUtils {
     public final static String APPLICATION_JSON = "application/json";
     public final static String APPLICATION_TEXT = "text/plain";
 
-    private final static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
+    private final static Logger logger = LoggerFactory.getLogger(TestDemo.class);
 
     /**
      * 向指定 URL 发送POST方法的请求
@@ -234,10 +236,61 @@ public class HttpUtils {
         return result;
     }
 
-    public static void main(String[] args) throws IOException {
-        String url = "http://127.0.0.1:6065/welife/shunde/queryOrderCount";
-        String text = "G00rsFqC5PSwF4lPvKCnfMTiUtNUMQE5YdbVMucqazbYHt+p+qHAzSl9+pGTJQizwjiCAQ9EtEjLTcJ2E2Y4+9Bg29M/xGtRhWQfWUw06xQfapz12iv8Ita+abNLaw5o9wqihUJXa1eK714lHmzQtCnyo0cxHM4Cjxwb9BwVBpEekER+cB9fUw8G4x8T3iC8ru3U8LxgDwQlf5hsNNIa9Bdc7jmjFMfxKu6jWQVDwgyiQ10uQ4Go/Fx8x6qqih6cS2QWqEo9LE4MgaFgpvEAXQ==";
+    // RSA加解密对
+    public final static String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5QEzaHKH69pqs6nP+t/x" +
+            "Zb1NMNAF/5ADlneuiTDViwfV6f5LA0tlYC43jrQCR49uuUSp7PZBKNd8fLF6C6Dd" +
+            "RoPmxWhITW0wIoPXahxO37+yYSmkF82g1ESv+ME0vSDWtpgZEh4G5SN0DCb3bg5K" +
+            "3SN1HvO3bN3HnhKjsYK7d6WqMR39HLL1uA2LqGMNc3QUsWeT4xAwLhJpoqkjN8XO" +
+            "45MhywlbDFI7iLi/d/7d+RrQwXsIxtAet5ybzZP6uJVhx6JMuOocW6YOnHRUle62" +
+            "Ub+LYDtKZ8MulFZqddSJmUEztr3b4rH68knf/hzWeyKYC2ll5oQwNk1IdkPB4GYJ" +
+            "3QIDAQAB";
+    public final static String privateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDlATNocofr2mqz" +
+            "qc/63/FlvU0w0AX/kAOWd66JMNWLB9Xp/ksDS2VgLjeOtAJHj265RKns9kEo13x8" +
+            "sXoLoN1Gg+bFaEhNbTAig9dqHE7fv7JhKaQXzaDURK/4wTS9INa2mBkSHgblI3QM" +
+            "JvduDkrdI3Ue87ds3ceeEqOxgrt3paoxHf0csvW4DYuoYw1zdBSxZ5PjEDAuEmmi" +
+            "qSM3xc7jkyHLCVsMUjuIuL93/t35GtDBewjG0B63nJvNk/q4lWHHoky46hxbpg6c" +
+            "dFSV7rZRv4tgO0pnwy6UVmp11ImZQTO2vdvisfrySd/+HNZ7IpgLaWXmhDA2TUh2" +
+            "Q8HgZgndAgMBAAECggEASM2n7UW0BnxKvdF3qFc3pFOZTbJkpcnACj8EQuM+kFOu" +
+            "YxSP/n0ivoAS85AwxVVJKyc0KnxjXLuc/PtjRH0gu8FFRW8QxWS4D9EAU+CqBqIn" +
+            "8JHPdC3QOouXsiqiPJpLCIO0PLlFEeXCh/Z/ZQKwNDuIiY2Lu9WKF6vvVIiuVqu/" +
+            "NObJAUGUhalzZpWwySkdzBldwRH2KikYHnIpefLMc0AIQqfl+fMUC+cGGZrHF699" +
+            "1yv6dM+2o/1toQF0xImFmtErJ86cLRCROWZ/2CpfH3I89R6mOJY2i3Z/CG7L9QqP" +
+            "WAg/2pULi5F47VwPzaertVAm/+5xXTBcbGOlYGQ+VQKBgQD6WGHQJMmlva0Le4uE" +
+            "phCl4ybnvWdMSG+115cITHKlt92OzSxn0XCBZ3OW5msMpFxuv+OqVkGyAhJnJA7t" +
+            "mDToOE9TVMatQ3bzMpiXtCUvof/vZqvjK9G5HRii3POwvN/e+QgdqsgX6fbkY2b3" +
+            "o4J8EMZVD0ynj/lBz8GPDyx0VwKBgQDqLWrTEFSt2Q4N1O1dJfqgBlpnPHSkl8Hb" +
+            "15/l9flsgMQwgLSg7vWoGuq52tvSxnPt6QtG41buUPUepptOTAEmgfuzKKwQ2EIA" +
+            "P0/SkptlqUf0DlrJO4UlrYmCwP9c/1e66aD0bkjwCXRPuSuKjox4XYZMS+ngT1Cg" +
+            "kq0ubivy6wKBgHekr7KDMl/ko4P+WnJdz00In3pXWbvqToEwdL0BlDVBB0ENK3C+" +
+            "dq9Rmrt+iaC0GHzRdmPc7268cMEcSYohmP92keq4dG8v8/RMtQKjlLYMDT4D6pga" +
+            "RBPdJP4I7OoFilSM3eUXzqMnLNh/7SDi4ySZ+7+BHVhjhXN/b/kH/m3nAoGAWKBV" +
+            "tImSsrTaB8wVBVLRVmzxG+8aagxxNuWVQ2/jNPhKx9x+AAZP/I4rVamJ1mx7BYhU" +
+            "V0DE7q6/Bhmh33EOYmeBPd3fuQRPfk53xEbt/vyhGbGxFEWtb4QM7epi+uw8ZKX0" +
+            "3205t3asiVuYKfknGoqyv/9fBSCfcBXy6waRJX8CgYEAuhA6t5t0/DPzWREuYQaf" +
+            "6oLLAWnfJlz0dKdVNs6kkyrlyIpYNBtIvtlyFa09qdq8D8ywhtxlmrO9zlu6ekhu" +
+            "AgkFfbx1ofy4QBRNDFWDPE6co90QlR/pz0haQTDqpF4XN0F5XYOCzHEuBjTHlQ/O" +
+            "TphBYG5nveEJwkeByMoJmZo=";
+
+    public static void main(String[] args) throws Exception {
+        String url = "http://127.0.0.1:6065/welife/payOrder/queryOrderCount/10038";
+
+        String key = "b6ce6afb0356424bb10089002cf85dca";
+        OrderCountReqAO ao = new OrderCountReqAO();
+//        ao.setServiceId(20927L); // todo 后续生产的ServerId需要与威富通进行确认
+        ao.setServiceId(10038L);// todo 后续生产的ServerId需要与威富通进行确认
+        ao.setMerchantIds("64421766905529344,64421768036942848");
+        ao.setMobile("13590189842");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date start = format.parse("2020-03-17 20:20:53");
+        Date end = format.parse("2020-03-24 20:36:33");
+        ao.setEndDate(end); // 2020-03-24 20:36:33
+        ao.setStartDate(start); // 2020-03-17 20:20:53
+        String json = JSONObject.toJSONString(ao);
+        String text = RSA.encode(json, publicKey);
         String s = sendPost(url, text);
         System.out.println(s);
+        JSONObject jsonObject = JSONObject.parseObject(s);
+        String decodeReqParams = RSA.decode(jsonObject.getString("respMsg"), privateKey);
+        System.out.println(decodeReqParams);
     }
 }

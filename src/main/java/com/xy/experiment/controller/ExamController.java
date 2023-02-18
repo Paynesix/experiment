@@ -76,7 +76,7 @@ public class ExamController extends BaseController {
             Map<Integer, ExamVo> map = new HashMap<>();
             int min = 1000;
             int max = -1;
-            int highScore = 0;
+            int highScore = 100;
             JSONArray array = JSONArray.parseArray(reqJsonStr);
             ExperimentExam examVo = new ExperimentExam();
             for (int i=0 ; i<array.size(); i++){
@@ -96,7 +96,7 @@ public class ExamController extends BaseController {
                 examVo.setDuration(examVo.getDuration() + actionDetail.getDuration());
                 examVo.setHintNum(examVo.getHintNum() + actionDetail.getHintNum());
                 examVo.setMistakeNum(examVo.getMistakeNum() + actionDetail.getMistakeNum());
-                highScore = Math.max(vo.getScore(), highScore);
+                highScore = Math.min(vo.getScore(), highScore);
             }
             // 3. 求总分，最后保存
             examVo.setAccount(map.get(max).getaCId());
@@ -199,7 +199,7 @@ public class ExamController extends BaseController {
             Map<Integer, ExamVo> map = new HashMap<>();
             int min = 1000;
             int max = -1;
-            int highScore = 0;
+            int highScore = 100;
             ExperimentExam examVo = new ExperimentExam();
             ExamVo vo = JSONObject.parseObject(reqJsonStr, ExamVo.class);
             List<ExamVo.ActionDetail> actionDetails = vo.getActionDetails();
@@ -218,9 +218,9 @@ public class ExamController extends BaseController {
                 examVo.setDuration(examVo.getDuration() + tmp.getDuration());
                 examVo.setHintNum(examVo.getHintNum() + tmp.getHintNum());
                 examVo.setMistakeNum(examVo.getMistakeNum() + tmp.getMistakeNum());
-                highScore = Math.max(vo.getScore(), highScore);
+                highScore = Math.min(vo.getScore(), highScore);
             }
-            // 3. 求总分，最后保存
+            // 3. 求总分，最后保存 取最低分
             examVo.setAccount(map.get(max).getaCId());
             examVo.setType(map.get(max).getType());
             examVo.setScore(highScore);
@@ -347,6 +347,20 @@ public class ExamController extends BaseController {
         down(sign, peExeName, request, response);
     }
 
+    /**
+     * 下载青霉素实验程序
+     *
+     * @param
+     * @param request
+     * @param response
+     */
+    @GetMapping(value = "/vipdownload")
+    void vipdownload(String fileName, HttpServletRequest request, HttpServletResponse response) {
+        logger.info("vipdownload START");
+        downloadFile(fileName, request, response);
+        logger.info("vipdownload END");
+    }
+
     private void down(String sign, String experimentName, HttpServletRequest request, HttpServletResponse response){
         try {
             // 判断是否登录
@@ -396,6 +410,7 @@ public class ExamController extends BaseController {
     public String downloadFile(String experimentName, HttpServletRequest request, HttpServletResponse response) {
         //设置文件路径
         File file = new File(exeDownPath + experimentName);
+        logger.info("down file path:{}", exeDownPath + experimentName);
         if (file.exists()) {
             response.setContentType("application/force-download");// 设置强制下载不打开
             response.addHeader("Content-Disposition", "attachment;fileName=" + experimentName);// 设置文件名
@@ -412,6 +427,7 @@ public class ExamController extends BaseController {
                     os.write(buffer, 0, i);
                     i = bis.read(buffer);
                 }
+                logger.info("download success");
                 return "下载成功";
             } catch (Exception e) {
                 e.printStackTrace();
@@ -439,6 +455,7 @@ public class ExamController extends BaseController {
                 }
             }
         }
+        logger.info("download failure");
         return "下载失败";
     }
 
