@@ -63,3 +63,24 @@ experiment:
   exeDownPath: /exp/download/
   vrExeName: 20221118_1848.rar
   peExeName: 20221118_1848.rar
+
+jetcache:
+  statIntervalMinutes: 15 # 统计间隔，默认0：表示不统计
+  areaInCacheName: false  # areaName是否作为缓存key前缀，默认True
+  local:
+    default: # 默认default，可以配置更多的area
+      type: linkedhashmap # 已支持可选：linkedhashmap、caffeine
+      keyConvertor: fastjson # key转换器
+  remote:
+    default:
+      type: redis
+      keyConvertor: fastjson
+      valueEncoder: java # 序列化器,只有remote需要
+      valueDecoder: java # 序列化器,只有remote需要
+      poolConfig:
+        minIdle: 5
+        maxIdle: 20
+        maxTotal: 50
+      host: 127.0.0.1
+      port: 6379
+      password: qwer1234
