@@ -1,7 +1,7 @@
 drop database experiment;
 
 create database experiment;
-
+use experiment;
 
 ## 学生实验用户表
 create table experiment_user
@@ -21,7 +21,7 @@ create table experiment_user
   password_error_time datetime                             null comment '校验密码错误时间 当前时间和这个时间比，如果时间间隔小于五分钟则不更新这个时间',
   password_error_num  int        default 0                 null comment '五分钟内密码输入错误次数 如果错误达到五次则锁定用户24小时',
   user_tag            int(2)     default 0                 null comment '用户标识（0-学生 1-管理员）',
-  version    		  varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
+  version        varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
   memo                varchar(500)                         null comment '备注',
   create_time         datetime   default CURRENT_TIMESTAMP null comment '创建时间',
   update_time         datetime   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
@@ -37,12 +37,12 @@ create table experiment_score
   id                  bigint(11) auto_increment comment '主键ID' primary key,
   account             varchar(50)                          null,
   school_name         varchar(50)                          null comment '学校名称',
-  exp_start      	  datetime                             null comment '实验开始时间',
-  exp_end        	  datetime                             null comment '实验结束时间',
-  exp_time			  int 								   null comment '实验时长 分钟',
-  score				  int 								   null comment '实验分数',
-  is_qualified		  int 								   null comment '是否合格 0-合格， 1-不合格',
-  version    		  varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
+  exp_start         datetime                             null comment '实验开始时间',
+  exp_end           datetime                             null comment '实验结束时间',
+  exp_time     int            null comment '实验时长 分钟',
+  score      int            null comment '实验分数',
+  is_qualified    int            null comment '是否合格 0-合格， 1-不合格',
+  version        varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
   memo                varchar(500)                         null comment '备注',
   create_time         datetime   default CURRENT_TIMESTAMP null comment '创建时间',
   update_time         datetime   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
@@ -77,18 +77,18 @@ CREATE TABLE `virtual_score` (
 ## 鼻窍手术实验分数表
 create table experiment_exam
 (
-    id              bigint(11) auto_increment comment '主键ID' primary key,
-    account         varchar(50)                          null comment 'aCId 在启动VR时，由courseId参数传递过来',
-    type            varchar(50)                          null comment '类型 由VR程序自身决定',
-    start_date       datetime                             null comment '实验开始时间',
-    stop_date    	datetime                             null comment '实验结束时间',
-    duration		int 								   null comment '实验总时长 秒',
-    hint_num		    int 								   null comment '使用提示总次数',
-    mistake_num		int 								   null comment '操作错误总次数',
-    score			int 								   null comment '由VR内部的评分机制生成的评分',
-    version    	    varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
-    memo            varchar(2000)                         null comment '实验得到的json文件',
-    create_time     datetime   default CURRENT_TIMESTAMP null comment '创建时间',
-    update_time     datetime   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
+    `id`              bigint(11) auto_increment comment '主键ID' primary key,
+    `account`         varchar(50)                          null comment 'aCId 在启动VR时，由courseId参数传递过来',
+    `type`            varchar(50)                          null comment '类型 由VR程序自身决定',
+    `start_date`       datetime                             null comment '实验开始时间',
+    `stop_date`     datetime                             null comment '实验结束时间',
+    `duration`  int            null comment '实验总时长 秒',
+    `hint_num`      int            null comment '使用提示总次数',
+    `mistake_num`  int            null comment '操作错误总次数',
+    `score`   int            null comment '由VR内部的评分机制生成的评分',
+    `version`         varchar(2) default 'V1'              null comment '版本（V1-第一版用户  V2-后续新建）',
+    `memo`            varchar(2000)                         null comment '实验得到的json文件',
+    `create_time`     datetime   default CURRENT_TIMESTAMP null comment '创建时间',
+    `update_time`     datetime   default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间',
     constraint idx_ex_exam_acid unique (account) comment '考生唯一索引'
 ) comment '鼻窍手术实验分数表';

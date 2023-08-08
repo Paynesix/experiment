@@ -1,6 +1,7 @@
 package com.xy.experiment.controller;
 
 import com.alicp.jetcache.Cache;
+import com.alicp.jetcache.CacheGetResult;
 import com.alicp.jetcache.anno.CreateCache;
 import com.xy.experiment.facade.JetcacheVerify;
 import org.slf4j.Logger;
@@ -21,8 +22,11 @@ public class JetcacheController extends BaseController {
 
     @Autowired
     private JetcacheVerify jetcacheVerify;
-    @CreateCache(name = "experiment--xxxx:")
+    @CreateCache(name = "coupon_service:")
     protected Cache<String, Long> cache;
+
+    @CreateCache(name = "coupon_service:J:")
+    protected Cache<String, Long> cacheJ;
 
 
     /**
@@ -31,9 +35,10 @@ public class JetcacheController extends BaseController {
     @RequestMapping(value = "/jetcacheAnn", method = RequestMethod.POST)
     void jetcacheAnn(HttpServletRequest request, HttpServletResponse response) {
         logger.info("jetcache START");
-        String res = jetcacheVerify.jetcacheVerify("JETCACHE-TOKEN");
+        String res = jetcacheVerify.jetcacheVerify("STOCK_OF_USER_TOTAL_CACHE_KEY_owr_y4gSbexgJ4aBN2aAubYlnh3c_1009000000001202303162268486716");
         sendSuccessData(response, res);
-        logger.info("jetcache END!");
+        logger.info("jetcache END! res :{}", res);
+        cacheJ.put("20230615", 1L);
     }
     /**
      * 缓存注解使用
@@ -61,7 +66,7 @@ public class JetcacheController extends BaseController {
     @RequestMapping(value = "/cache", method = RequestMethod.POST)
     void cache(HttpServletRequest request, HttpServletResponse response) {
         logger.info("cache START");
-        cache.put("cache", 1L);
+        cache.put("JETCACHE-TOKEN", 1L);
         sendSuccessData(response, cache.get("cache"));
         logger.info("cache END!");
     }
@@ -76,5 +81,15 @@ public class JetcacheController extends BaseController {
         sendSuccessData(response, res);
         logger.info("invalidateJetcacheAnn END!");
     }
+
+    /**
+     * 缓存注解使用
+     */
+    @RequestMapping(value = "/verify", method = RequestMethod.POST)
+    void verify(HttpServletRequest request, HttpServletResponse response) {
+        CacheGetResult<Long> res = cache.GET("STOCK_OF_USER_TOTAL_CACHE_KEY_owr_y4gSbexgJ4aBN2aAubYlnh3c_1009000000001202303162268486716");
+        sendSuccessData(response, res);
+    }
+
 
 }

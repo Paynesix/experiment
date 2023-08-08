@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 public class JetcacheVerifyImpl implements JetcacheVerify {
 
     private final static Logger logger = LoggerFactory.getLogger(JetcacheVerifyImpl.class);
-    @CreateCache(name = "experiment:")
+    @CreateCache(name = "coupon_service:")
     protected Cache<String, Long> cache;
 
     @Override
-    @Cached(name = "experiment:",  key = "'jetcache'+#token", expire = 600, cacheType = CacheType.REMOTE)
+    @Cached(name = "coupon_service:",  key = "#token", expire = 600, cacheType = CacheType.REMOTE)
     public String jetcacheVerify(String token) {
         logger.info("-------jetcacheVerify-------->:{}", token);
         return System.currentTimeMillis() + token;
@@ -37,12 +37,12 @@ public class JetcacheVerifyImpl implements JetcacheVerify {
 
     @Override
     public String tryLock(String token) {
-        cache.tryLockAndRun("tryLockKey", 10, TimeUnit.SECONDS, ()->{
+        boolean b = cache.tryLockAndRun("tryLockKey", 10, TimeUnit.SECONDS, () -> {
             try {
                 logger.info("----------tryLock----START------>:{}", token);
                 Object tryLockKey = cache.get("tryLockKey");
                 logger.info("first get tryLockKey:{}", tryLockKey);
-                Thread.sleep(12*1000);
+                Thread.sleep(30 * 1000);
                 tryLockKey = cache.get("tryLockKey");
                 logger.info("again get tryLockKey:{}", tryLockKey);
                 logger.info("----------tryLock-----END----->:{}", token);
@@ -50,6 +50,11 @@ public class JetcacheVerifyImpl implements JetcacheVerify {
                 logger.error("----------tryLock----error------>:{}", e);
             }
         });
+        if(b){
+            logger.info("-------OK-------");
+        } else {
+            logger.info("-------ERROR-------");
+        }
 
         return "ok";
     }
